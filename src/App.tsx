@@ -5,34 +5,38 @@ import editor from 'monaco-editor';
 import Editor,  { OnMount } from "@monaco-editor/react";
 import Tree from 'react-d3-tree';
 import styles from './custom-tree.module.css'
-
+import { SExp } from './parserTypes';
+import { visualizeSExp } from './treeBuilder';
+import axios from "axios";
 
 
 type ParsingMode = "READER" | "TAG_PARSER" | "SEMANTIC_ANALYZER"
 const isParsingMode = (x: any): x is ParsingMode => x === "READER" || x === "TAG_PARSER" || x === "SEMANTIC_ANALYZER";
 const DEFAULT_PARSING_MODE: ParsingMode = "READER";
+const PARSER_ADDRESS = "http://127.0.0.1:5000/parse";
 
 
 
 const orgChart = {
   name: 'CEO',
+  attributes: {description: 'King'},
   children: [
     {
       name: 'Manager',
       children: [
         {
-          name: 'Foreman',
+          name: 'Foreman1',
           children: [
             {
-              name: 'Worker',
+              name: 'Worker1',
             },
           ],
         },
         {
-          name: 'Foreman',
+          name: 'Foreman2',
           children: [
             {
-              name: 'Worker',
+              name: 'Worker2',
             },
           ],
         },
@@ -41,21 +45,42 @@ const orgChart = {
   ],
 };
 
+async function fetchFromServer(code: string, mode: ParsingMode) {
+  const response = await axios.post(PARSER_ADDRESS,
+    JSON.stringify({ mode: mode,  code: code}),
+    {headers: { 'Content-Type': 'application/json' }}).then((x) => x, (error) => {
+      throw error;
+    });
+  return response.data;
+
+}
+
+
 
 function App() {
   const editorRef = useRef<editor.editor.IStandaloneCodeEditor | null>(null);
   const [parsingMode, setParsingMode] = React.useState<ParsingMode>(DEFAULT_PARSING_MODE);
   const [tree, setTree] = React.useState<any>({});
-  
 
+  async function buildFromReader() {
+    const sexprs: SExp[] = (await fetchFromServer(getCode(), parsingMode))  as unknown as SExp[];
+    if(sexprs.length === 0) {
+      setTree({});
+    } else {
+      setTree(visualizeSExp(sexprs[sexprs.length-1]))
+    }
+  }
+  
+  function buildTree() {
+    if(parsingMode !== 'READER') {
+      alert('Not supported yet');
+    }
+    buildFromReader();
+  }
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
   }
 
-  function printContent() {
-    alert(getCode());
-    setTree(orgChart);
-  }
 
   function getCode(): string {
     const editor = editorRef?.current;
@@ -102,7 +127,7 @@ function App() {
     <option value="TAG_PARSER">Tag Parser</option>
     <option value="SEMANTIC_ANALYZER">Semantic Analyzer</option>
   </select>
-  <button onClick={printContent}
+  <button onClick={buildTree}
     style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
     >Build AST</button>
     <div id="treeWrapper" style={{ width: "100%", height: "100vh", color: "white"}}  >
