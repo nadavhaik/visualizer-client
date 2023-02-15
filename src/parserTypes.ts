@@ -158,7 +158,7 @@ export const isScmVarDef = (x: any): x is ScmVarDef => x.type === 'ScmVarDef';
 export type ScmLambda = {
     type: 'ScmLambda',
     value: {
-        params: string[],
+        params: OcamlList<string>,
         kind: LambdaKind,
         body: Exp
     }

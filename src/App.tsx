@@ -5,8 +5,8 @@ import editor from 'monaco-editor';
 import Editor,  { OnMount } from "@monaco-editor/react";
 import Tree from 'react-d3-tree';
 import styles from './custom-tree.module.css'
-import { SExp } from './parserTypes';
-import { visualizeSExp } from './treeBuilder';
+import { Exp, SExp } from './parserTypes';
+import { visualizeExp, visualizeSExp } from './treeBuilder';
 import axios from "axios";
 
 
@@ -63,19 +63,34 @@ function App() {
   const [tree, setTree] = React.useState<any>({});
 
   async function buildFromReader() {
-    const sexprs: SExp[] = (await fetchFromServer(getCode(), parsingMode))  as unknown as SExp[];
+    const sexprs: SExp[] = (await fetchFromServer(getCode(), 'READER')) as SExp[];
     if(sexprs.length === 0) {
       setTree({});
     } else {
       setTree(visualizeSExp(sexprs[sexprs.length-1]))
     }
   }
+
+  async function buildFromTagParser() {
+    const exprs: Exp[] = (await fetchFromServer(getCode(), 'TAG_PARSER')) as Exp[];
+    if(exprs.length === 0) {
+      setTree({});
+    } else {
+      setTree(visualizeExp(exprs[exprs.length-1]))
+    }
+
+  }
   
   function buildTree() {
-    if(parsingMode !== 'READER') {
+    if(parsingMode === 'READER') {
+      buildFromReader();
+    } else if(parsingMode === 'TAG_PARSER') {
+      buildFromTagParser();
+    }
+    else if(parsingMode === 'SEMANTIC_ANALYZER') {
       alert('Not supported yet');
     }
-    buildFromReader();
+    
   }
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -103,14 +118,13 @@ function App() {
   
   return (
     
+   <div>
    <div
-   ><style>{'body { background-color: #1e1e1e; }'}</style>
-   <div
-   style={{border: '1px solid rgba(192,192,192, 0.01)', }}
+   style={{border: '1px solid rgb(0,0,0)', }}
    >
    <Editor
      height="30vh"
-     theme="vs-dark"
+    //  theme="vs-dark"
      defaultLanguage="scheme"
      defaultValue=""
      onMount={handleEditorDidMount}
@@ -121,14 +135,17 @@ function App() {
    
 
   <select value={parsingMode}
-    style={{ backgroundColor: "black", color: "white", marginLeft: 50, font: 'calibri'}}
+    // style={{ backgroundColor: "black", color: "white", marginLeft: 50, font: 'calibri'}}
+    style={{ marginLeft: 50, font: 'calibri'}}
+
     onChange={handleParserChoice}>
     <option value="READER">Reader</option>
     <option value="TAG_PARSER">Tag Parser</option>
     <option value="SEMANTIC_ANALYZER">Semantic Analyzer</option>
   </select>
   <button onClick={buildTree}
-    style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+    // style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+    style={{ marginLeft: 10, font: 'calibri'}}
     >Build AST</button>
     <div id="treeWrapper" style={{ width: "100%", height: "100vh", color: "white"}}  >
 
