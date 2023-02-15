@@ -205,7 +205,7 @@ export const visualizeScmBoxGetTag: Visualizer<ScmBoxGetTag> = (boxGetTag) => ({
 
 export const visualizeScmBoxSetTag: Visualizer<ScmBoxSetTag> = (boxSetTag) => ({name: "ScmBoxSet'", children: [visualizeVarTag(boxSetTag.value.var), visualizeExpTag(boxSetTag.value.val)]});
 
-export const visualizeLambdaTag: Visualizer<ScmLambdaTag> = (lambdaTag) => ({name: "ScmLambda'", children: [visualizeStrings(lambdaTag.value.params), visualizeExpTag(lambdaTag.value.body)]});
+export const visualizeLambdaTag: Visualizer<ScmLambdaTag> = (lambdaTag) => ({name: "ScmLambda'", children: [visualizeStrings(lambdaTag.value.params), visualizeLambdaKind(lambdaTag.value.kind), visualizeExpTag(lambdaTag.value.body)]});
 
 export const visualizeApplicTag: Visualizer<ScmApplicTag> = (applicTag) => ({name: "ScmApplic'", 
     children: [visualizeExpTag(applicTag.value.applicative), visualizeExprsTag(applicTag.value.params), visualizeAppKind(applicTag.value.kind)]});

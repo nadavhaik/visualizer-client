@@ -293,6 +293,7 @@ export type ScmLambdaTag = {
     type: 'ScmLambdaTag',
     value: {
         params: OcamlList<string>,
+        kind: LambdaKind,
         body: ExpTag
     }
 };

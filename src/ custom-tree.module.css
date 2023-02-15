@@ -3,6 +3,12 @@
     fill: red;
   }
   
+  .rd3t-label__title {
+    fill: rgb(255 255 255);
+    stroke: none;
+    font-weight: bolder;
+}
+
   .node__branch > circle {
     fill: yellow;
   }
@@ -11,4 +17,9 @@
     fill: green;
     /* Let's also make the radius of leaf nodes larger */
     r: 40;
+  }
+
+
+  .node text {
+    fill: white;
   }
