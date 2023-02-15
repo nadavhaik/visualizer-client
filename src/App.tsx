@@ -5,8 +5,8 @@ import editor from 'monaco-editor';
 import Editor,  { OnMount } from "@monaco-editor/react";
 import Tree from 'react-d3-tree';
 import styles from './custom-tree.module.css'
-import { Exp, SExp } from './parserTypes';
-import { visualizeExp, visualizeSExp } from './treeBuilder';
+import { Exp, ExpTag, SExp } from './parserTypes';
+import { visualizeExp, visualizeExpTag, visualizeSExp } from './treeBuilder';
 import axios from "axios";
 
 
@@ -49,10 +49,10 @@ async function fetchFromServer(code: string, mode: ParsingMode) {
   const response = await axios.post(PARSER_ADDRESS,
     JSON.stringify({ mode: mode,  code: code}),
     {headers: { 'Content-Type': 'application/json' }}).then((x) => x, (error) => {
+      alert(`An error has occured while trying to parse your code. Is your code valid?`);
       throw error;
     });
   return response.data;
-
 }
 
 
@@ -67,7 +67,7 @@ function App() {
     if(sexprs.length === 0) {
       setTree({});
     } else {
-      setTree(visualizeSExp(sexprs[sexprs.length-1]))
+      setTree(visualizeSExp(sexprs[sexprs.length-1]));
     }
   }
 
@@ -76,9 +76,17 @@ function App() {
     if(exprs.length === 0) {
       setTree({});
     } else {
-      setTree(visualizeExp(exprs[exprs.length-1]))
+      setTree(visualizeExp(exprs[exprs.length-1]));
     }
+  }
 
+  async function buildFromSemantics() {
+    const exprsTag: ExpTag[] = (await fetchFromServer(getCode(), 'SEMANTIC_ANALYZER')) as ExpTag[];
+    if(exprsTag.length === 0) {
+      setTree({});
+    } else {
+      setTree(visualizeExpTag(exprsTag[exprsTag.length-1]));
+    }
   }
   
   function buildTree() {
@@ -88,8 +96,9 @@ function App() {
       buildFromTagParser();
     }
     else if(parsingMode === 'SEMANTIC_ANALYZER') {
-      alert('Not supported yet');
+      buildFromSemantics();
     }
+
     
   }
   const handleEditorDidMount: OnMount = (editor) => {

@@ -1,4 +1,4 @@
-import { Exp, isLambdaOpt, isLambdaSimple, isScmApplic, isScmBoolean, isScmChar, isScmConst, isScmFloat, isScmIf, isScmLambda, isScmNil, isScmNumber, isScmOr, isScmPair, isScmSeq, isScmString, isScmSymbol, isScmVarDef, isScmVarGet, isScmVarSet, isScmVector, isScmVoid, LambdaKind, LambdaOpt, LambdaSimple, OcamlList, ScmApplic, ScmBoolean, ScmChar, ScmConst, ScmIf, ScmLambda, ScmNil, ScmNumber, ScmOr, ScmPair, ScmSeq, ScmString, ScmSymbol, ScmVar, ScmVarDef, ScmVarGet, ScmVarSet, ScmVector, ScmVoid, SExp } from "./parserTypes";
+import { AppKind, Exp, ExpTag, isBound, isFree, isLambdaOpt, isLambdaSimple, isParam, isScmApplic, isScmApplicTag, isScmBoolean, isScmBoxGetTag, isScmBoxSetTag, isScmBoxTag, isScmChar, isScmConst, isScmConstTag, isScmFloat, isScmIf, isScmIfTag, isScmLambda, isScmLambdaTag, isScmNil, isScmNumber, isScmOr, isScmOrTag, isScmPair, isScmSeq, isScmSeqTag, isScmString, isScmSymbol, isScmVarDef, isScmVarDefTag, isScmVarGet, isScmVarGetTag, isScmVarSet, isScmVarSetTag, isScmVector, isScmVoid, LambdaKind, LambdaOpt, LambdaSimple, LexicalAddress, OcamlList, ScmApplic, ScmApplicTag, ScmBoolean, ScmBoxGetTag, ScmBoxSetTag, ScmBoxTag, ScmChar, ScmConst, ScmConstTag, ScmIf, ScmIfTag, ScmLambda, ScmLambdaTag, ScmNil, ScmNumber, ScmOr, ScmOrTag, ScmPair, ScmSeq, ScmSeqTag, ScmString, ScmSymbol, ScmVar, ScmVarDef, ScmVarDefTag, ScmVarGet, ScmVarGetTag, ScmVarSet, ScmVarSetTag, ScmVarTag, ScmVector, ScmVoid, SExp } from "./parserTypes";
 
 export type TreeNode = {
     name: string,
@@ -162,6 +162,97 @@ export function visualizeExp(exp: Exp): TreeNode {
     }
     throw Error(`Unrecognized exp: ${exp}`)
     
+}
+
+export const visualizeAppKind: Visualizer<AppKind> = (appKind) => nameOnly(appKind.value);
+
+export const visualizeLexicalAddress: Visualizer<LexicalAddress> = (lex) => {
+    if(isFree(lex)) {
+        return nameOnly('Free')
+    }
+    if(isParam(lex)) {
+        return nameOnly(`Param(${lex.value.minor})`);
+    }
+    if(isBound(lex)) {
+        return nameOnly(`Bound(${lex.value.major},${lex.value.minor})`);
+    }
+
+    throw new Error(`Unrecognized lexical address: ${lex}`);
+};
+
+export const visualizeVarTag: Visualizer<ScmVarTag> = (varTag) => ({name: "var'", 
+    children: [nameOnly(varTag.value.name) ,visualizeLexicalAddress(varTag.value.lexical_address)]});
+
+
+export const visualizeScmConstTag: Visualizer<ScmConstTag> = (scmConstTag) => ({name: "ScmConst'", children: [visualizeSExp(scmConstTag.value.sexpr)]});
+
+export const visualizeVarGetTag: Visualizer<ScmVarGetTag> = (varGetTag) => ({name: "ScmVarGet'", children: [visualizeVarTag(varGetTag.value.var)]});
+
+export const visualizeIfTag: Visualizer<ScmIfTag> = (ifTag) => ({name: "ScmIf'", 
+    children: [visualizeExpTag(ifTag.value.test), visualizeExpTag(ifTag.value.dit), visualizeExpTag(ifTag.value.dif)]});
+
+export const visualizeSeqTag: Visualizer<ScmSeqTag> = (seqTag) => ({name: "ScmSeq'", children: seqTag.value.exprs.value.map(visualizeExpTag)});
+
+export const visualizeOrTag: Visualizer<ScmOrTag> = (orTag) => ({name: "ScmOr'", children: orTag.value.exprs.value.map(visualizeExpTag)});
+
+export const visualizeVarSetTag: Visualizer<ScmVarSetTag> = (varSetTag) => ({name: "ScmVarSet'", children: [visualizeVarTag(varSetTag.value.var), visualizeExpTag(varSetTag.value.val)]});
+
+export const visualizeVarDefTag: Visualizer<ScmVarDefTag> = (varDefTag) => ({name: "ScmVarDef'", children: [visualizeVarTag(varDefTag.value.var), visualizeExpTag(varDefTag.value.val)]});
+
+export const visualizeScmBoxTag: Visualizer<ScmBoxTag> = (boxTag) => ({name: "ScmBox'", children: [visualizeVarTag(boxTag.value.var)]});
+
+export const visualizeScmBoxGetTag: Visualizer<ScmBoxGetTag> = (boxGetTag) => ({name: "ScmBoxGet'", children: [visualizeVarTag(boxGetTag.value.var)]});
+
+export const visualizeScmBoxSetTag: Visualizer<ScmBoxSetTag> = (boxSetTag) => ({name: "ScmBoxSet'", children: [visualizeVarTag(boxSetTag.value.var), visualizeExpTag(boxSetTag.value.val)]});
+
+export const visualizeLambdaTag: Visualizer<ScmLambdaTag> = (lambdaTag) => ({name: "ScmLambda'", children: [visualizeStrings(lambdaTag.value.params), visualizeExpTag(lambdaTag.value.body)]});
+
+export const visualizeApplicTag: Visualizer<ScmApplicTag> = (applicTag) => ({name: "ScmApplic'", 
+    children: [visualizeExpTag(applicTag.value.applicative), visualizeExprsTag(applicTag.value.params), visualizeAppKind(applicTag.value.kind)]});
+
+
+export const visualizeExprsTag: Visualizer<OcamlList<ExpTag>> = (exprs) => ({name: "OcamlList", children: exprs.value.map(visualizeExpTag)});
+
+export function visualizeExpTag(expTag: ExpTag): TreeNode {
+    if(isScmConstTag(expTag)) {
+        return visualizeScmConstTag(expTag);
+    }
+    if(isScmVarGetTag(expTag)) {
+        return visualizeVarGetTag(expTag);
+    }
+    if(isScmIfTag(expTag)) {
+        return visualizeIfTag(expTag);
+    }
+    if(isScmSeqTag(expTag)) {
+        return visualizeSeqTag(expTag);
+    }
+    if(isScmOrTag(expTag)) {
+        return visualizeOrTag(expTag);
+    }
+    if(isScmVarSetTag(expTag)) {
+        return visualizeVarSetTag(expTag);
+    }
+    if(isScmVarDefTag(expTag)) {
+        return visualizeVarDefTag(expTag);
+    }
+    if(isScmBoxTag(expTag)) {
+        return visualizeScmBoxTag(expTag);
+    }
+    if(isScmBoxGetTag(expTag)) {
+        return visualizeScmBoxGetTag(expTag);
+    }
+    if(isScmBoxSetTag(expTag)) {
+        return visualizeScmBoxSetTag(expTag);
+    }
+    if(isScmLambdaTag(expTag)) {
+        return visualizeLambdaTag(expTag);
+    }
+    if(isScmApplicTag(expTag)) {
+        return visualizeApplicTag(expTag);
+    }
+
+    throw new Error(`Unrecognized exp': ${expTag}`);
+
 }
 
 
