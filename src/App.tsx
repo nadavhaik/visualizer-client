@@ -4,7 +4,9 @@ import ReactDOM from "react-dom";
 import editor from 'monaco-editor';
 import Editor,  { OnMount } from "@monaco-editor/react";
 import Tree from 'react-d3-tree';
-import styles from './custom-tree.module.css'
+import styles from './custom-tree.module.css';
+// import './custom-tree.module.css';
+
 import { Exp, ExpTag, SExp } from './parserTypes';
 import { visualizeExp, visualizeExpTag, visualizeSExp } from './treeBuilder';
 import axios from "axios";
@@ -128,8 +130,9 @@ function App() {
   return (
     
    <div>
+   {/* <style>{'body { background-color: #1e1e1e; }'}</style> */}
    <div
-   style={{border: '1px solid rgb(0,0,0)', }}
+   style={{border: '1px solid rgb(0,0,0)', fill: '#5555ff'}}
    >
    <Editor
      height="30vh"
@@ -137,6 +140,7 @@ function App() {
      defaultLanguage="scheme"
      defaultValue=""
      onMount={handleEditorDidMount}
+         
    />
    </div>
       
@@ -156,15 +160,14 @@ function App() {
     // style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
     style={{ marginLeft: 10, font: 'calibri'}}
     >Build AST</button>
-    <div id="treeWrapper" style={{ width: "100%", height: "100vh", color: "white"}}  >
+  <div id="treeWrapper" style={{ width: "100%", height: "65vh", color: "white" , fill: "white"}}   >
 
-  <Tree
+  <Tree 
     orientation="vertical"
     translate={{ x: 900, y: 100 }}
-    rootNodeClassName="node__root"
-    branchNodeClassName="node__branch"
-    leafNodeClassName="node__leaf"
+    // zoomable={false}
    data={tree} 
+  //  renderCustomNodeElement={()=> ({fill: "white"})}
   />
   </div>
   
