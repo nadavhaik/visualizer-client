@@ -4,12 +4,14 @@ import ReactDOM from "react-dom";
 import editor from 'monaco-editor';
 import Editor,  { OnMount } from "@monaco-editor/react";
 import Tree from 'react-d3-tree';
+import axios from "axios";
 import styles from './custom-tree.module.css';
 // import './custom-tree.module.css';
 
 import { Exp, ExpTag, SExp } from './parserTypes';
 import { visualizeExp, visualizeExpTag, visualizeSExp } from './treeBuilder';
-import axios from "axios";
+import { schemeChezLang } from './schemeChez';
+
 
 
 type ParsingMode = "READER" | "TAG_PARSER" | "SEMANTIC_ANALYZER"
@@ -19,33 +21,6 @@ const PARSER_ADDRESS = "http://127.0.0.1:5000/parse";
 
 
 
-const orgChart = {
-  name: 'CEO',
-  attributes: {description: 'King'},
-  children: [
-    {
-      name: 'Manager',
-      children: [
-        {
-          name: 'Foreman1',
-          children: [
-            {
-              name: 'Worker1',
-            },
-          ],
-        },
-        {
-          name: 'Foreman2',
-          children: [
-            {
-              name: 'Worker2',
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
 
 async function fetchFromServer(code: string, mode: ParsingMode) {
   const response = await axios.post(PARSER_ADDRESS,
@@ -60,6 +35,19 @@ async function fetchFromServer(code: string, mode: ParsingMode) {
 
 
 function App() {
+  useEffect(() => {
+    document.title = 'Scheme Visualizer';
+  }, []);
+
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    editor.getModel()?.updateOptions({
+      bracketColorizationOptions: {enabled: true}
+    });
+    
+    monaco.languages.setMonarchTokensProvider('scheme', schemeChezLang);
+  }
+
   const editorRef = useRef<editor.editor.IStandaloneCodeEditor | null>(null);
   const [parsingMode, setParsingMode] = React.useState<ParsingMode>(DEFAULT_PARSING_MODE);
   const [tree, setTree] = React.useState<any>({});
@@ -100,12 +88,8 @@ function App() {
     else if(parsingMode === 'SEMANTIC_ANALYZER') {
       buildFromSemantics();
     }
-
-    
   }
-  const handleEditorDidMount: OnMount = (editor) => {
-    editorRef.current = editor;
-  }
+  
 
 
   function getCode(): string {
@@ -134,12 +118,16 @@ function App() {
    <div
    style={{border: '1px solid rgb(0,0,0)', fill: '#5555ff'}}
    >
+    
    <Editor
      height="30vh"
     //  theme="vs-dark"
      defaultLanguage="scheme"
      defaultValue=""
      onMount={handleEditorDidMount}
+    
+     
+     
          
    />
    </div>
