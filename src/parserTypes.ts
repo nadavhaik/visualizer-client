@@ -72,7 +72,7 @@ export const isScmVector = (x: any): x is ScmVector => isOcamlListOf(x, isSExp);
 
 export type SExp = ScmVoid | ScmNil | ScmBoolean | ScmChar | ScmString | ScmSymbol | ScmNumber | ScmVector | ScmPair;
 export const isSExp = (x: any): x is SExp => isScmVoid(x) || isScmNil(x) || isScmBoolean(x) || isScmChar(x) ||
-    isScmString(x) || isScmSymbol(x) || isScmNumber(x) || isScmVector(x);
+    isScmString(x) || isScmSymbol(x) || isScmNumber(x) || isScmVector(x) || isScmPair(x);
 
 
 // Exp:
