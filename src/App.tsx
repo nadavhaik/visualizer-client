@@ -7,19 +7,22 @@ import Tree from 'react-d3-tree';
 import axios from "axios";
 import styles from './custom-tree.module.css';
 // import './custom-tree.module.css';
+import jsPDF from 'jspdf';
+import * as d3 from 'd3';
+
 
 import { Exp, ExpTag, SExp } from './parserTypes';
 import { visualizeExp, visualizeExpTag, visualizeSExp } from './treeBuilder';
 import { schemeChezLang } from './schemeChez';
-
+const configurations = require("./configurations.json");
 
 
 type ParsingMode = "READER" | "TAG_PARSER" | "SEMANTIC_ANALYZER"
 const isParsingMode = (x: any): x is ParsingMode => x === "READER" || x === "TAG_PARSER" || x === "SEMANTIC_ANALYZER";
+
 const DEFAULT_PARSING_MODE: ParsingMode = "READER";
-const PARSER_ADDRESS = "http://127.0.0.1:5000/parse";
-
-
+const PARSER_ADDRESS = `http://${configurations.parser.host}/${configurations.parser.endPoint}`;
+const DARK_MODE = true;
 
 
 async function fetchFromServer(code: string, mode: ParsingMode) {
@@ -109,8 +112,54 @@ function App() {
     setParsingMode(mode);    
   }
 
+  function getSVG() {
+    const svgDocs = document.getElementsByTagName("svg");
+    if(svgDocs.length !== 1) {
+      throw Error("Couldn't get SVG!");
+    } 
+    return svgDocs[0];
+  }
 
-  
+  const w = 1980;
+  const h = 980;
+
+  function svgToCanvas(){
+    // Select the first svg element
+    
+
+
+    var svg = getSVG(),
+        img = new Image(),
+        serializer = new XMLSerializer(),
+        svgStr = serializer.serializeToString(svg);
+
+    img.src = 'data:image/svg+xml;base64,'+window.btoa(svgStr);
+
+    // You could also use the actual string without base64 encoding it:
+    //img.src = "data:image/svg+xml;utf8," + svgStr;
+
+    var canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+
+    canvas.width = w;
+    canvas.height = h;
+    
+    canvas.getContext("2d")!.drawImage(img,0,0,w,h);
+    // Now save as png or whatever
+    return canvas;
+};
+
+  async function exportPDF() {
+    const canvas = svgToCanvas();
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF();
+    pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+    // pdf.output('dataurlnewwindow');
+    pdf.save("download.pdf");
+  }
+
+
+
   return (
     
    <div>
@@ -121,19 +170,14 @@ function App() {
     
    <Editor
      height="30vh"
-    //  theme="vs-dark"
+     theme={DARK_MODE ? 'vs-dark' : 'vs-light'}
      defaultLanguage="scheme"
      defaultValue=""
-     onMount={handleEditorDidMount}
-    
-     
-     
-         
+     onMount={handleEditorDidMount}  
    />
    </div>
       
-   
-   
+
 
   <select value={parsingMode}
     // style={{ backgroundColor: "black", color: "white", marginLeft: 50, font: 'calibri'}}
@@ -148,14 +192,21 @@ function App() {
     style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
     // style={{ marginLeft: 10, font: 'calibri'}}
     >Build AST</button>
-  <div id="treeWrapper" style={{ width: "100%", height: "65vh", color: "white" , fill: "white"}}   >
 
+  {/* <button onClick={exportPDF}
+    style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+  >Save PDF</button> */}
+
+
+  <div id="treeWrapper" style={{ width: "100%", height: "65vh", color: "white" , fill: "white"}}   >
+  
   <Tree 
     orientation="vertical"
     translate={{ x: 900, y: 100 }}
     // zoomable={false}
    data={tree} 
   //  renderCustomNodeElement={()=> ({fill: "white"})}
+  // onUpdate={}
   />
   </div>
   
