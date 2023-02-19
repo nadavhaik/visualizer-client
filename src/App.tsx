@@ -54,6 +54,9 @@ function App() {
 
   function updateFontSize(newFontSize: number) {
     editorRef.current?.updateOptions({cursorStyle: 'line', cursorBlinking: 'smooth', cursorWidth: newFontSize, fontSize: newFontSize});
+    editorRef.current?.getModel()?.updateOptions({
+      bracketColorizationOptions: {enabled: true}
+    });
     setFontSize(newFontSize);
   }
 
