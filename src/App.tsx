@@ -47,14 +47,31 @@ function App() {
     editor.getModel()?.updateOptions({
       bracketColorizationOptions: {enabled: true}
     });
-    editor.updateOptions({cursorStyle: 'line', cursorBlinking: 'smooth', cursorWidth: 10});
+    editor.updateOptions({cursorStyle: 'line', cursorBlinking: 'smooth', cursorWidth: fontSize, fontSize: fontSize});
     
     monaco.languages.setMonarchTokensProvider('scheme', schemeChezLang);
+  }
+
+  function updateFontSize(newFontSize: number) {
+    editorRef.current?.updateOptions({cursorStyle: 'line', cursorBlinking: 'smooth', cursorWidth: newFontSize, fontSize: newFontSize});
+    setFontSize(newFontSize);
+  }
+
+  function incrementFontSize() {
+    updateFontSize(fontSize+1);
+  }
+
+  function decrementFontSize() {
+    if(fontSize === 1) {
+      return;
+    }
+    updateFontSize(fontSize-1);
   }
 
   const editorRef = useRef<editor.editor.IStandaloneCodeEditor | null>(null);
   const [parsingMode, setParsingMode] = React.useState<ParsingMode>(DEFAULT_PARSING_MODE);
   const [tree, setTree] = React.useState<any>({});
+  const [fontSize, setFontSize] = React.useState<number>(16);
 
   async function buildFromReader() {
     const sexprs: SExp[] = (await fetchFromServer(getCode(), 'READER')) as SExp[];
@@ -174,7 +191,7 @@ function App() {
      theme={DARK_MODE ? 'vs-dark' : 'vs-light'}
      defaultLanguage="scheme"
      defaultValue=""
-     onMount={handleEditorDidMount}  
+     onMount={handleEditorDidMount}
    />
    </div>
       
@@ -197,6 +214,16 @@ function App() {
   {/* <button onClick={exportPDF}
     style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
   >Save PDF</button> */}
+
+  <button onClick={incrementFontSize}
+    // style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+    style={{ marginLeft: 10, font: 'calibri'}}
+    >+</button>
+
+   <button onClick={decrementFontSize}
+    // style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+    style={{ marginLeft: 5, font: 'calibri'}}
+    >-</button>
 
 
   <div id="treeWrapper" style={{ width: "100%", height: "66vh", color: "white" , fill: "white"}}   >
