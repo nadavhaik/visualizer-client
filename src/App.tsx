@@ -198,7 +198,7 @@ function App() {
   >Save PDF</button> */}
 
 
-  <div id="treeWrapper" style={{ width: "100%", height: "65vh", color: "white" , fill: "white"}}   >
+  <div id="treeWrapper" style={{ width: "100%", height: "66vh", color: "white" , fill: "white"}}   >
   
   <Tree 
     orientation="vertical"

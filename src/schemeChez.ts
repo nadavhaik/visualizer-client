@@ -84,7 +84,7 @@ export const schemeChezLang: languages.IMonarchLanguage = {
 			[/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?/, 'number.float'],
 
 			[
-				/(?:\b(?:(define|define-syntax|define-macro))\b)(\s+)((?:\w|\-|\!|\?)*)/,
+				/(?:\b(?:(define|define-syntax|define-macro))\b)(\s+)((?:\w|>|<|\-|\!|\?)*)/,
 				['keyword', 'white', 'variable']
 			],
 
