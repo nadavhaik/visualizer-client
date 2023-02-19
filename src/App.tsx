@@ -189,8 +189,8 @@ function App() {
     <option value="SEMANTIC_ANALYZER">Semantic Analyzer</option>
   </select>
   <button onClick={buildTree}
-    style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
-    // style={{ marginLeft: 10, font: 'calibri'}}
+    // style={{ backgroundColor: "black", color: "white", marginLeft: 10, font: 'calibri'}}
+    style={{ marginLeft: 10, font: 'calibri'}}
     >Build AST</button>
 
   {/* <button onClick={exportPDF}
