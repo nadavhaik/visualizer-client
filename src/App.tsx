@@ -47,6 +47,7 @@ function App() {
     editor.getModel()?.updateOptions({
       bracketColorizationOptions: {enabled: true}
     });
+    editor.updateOptions({cursorStyle: 'line', cursorBlinking: 'smooth', cursorWidth: 10});
     
     monaco.languages.setMonarchTokensProvider('scheme', schemeChezLang);
   }
